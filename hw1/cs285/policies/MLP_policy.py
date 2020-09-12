@@ -88,11 +88,13 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         # TODO return the action that the policy prescribes
         observation = torch.from_numpy(observation).to(torch.float32)
         observation = observation.to(ptu.device)
-        return self.forward(observation)
+        return self.forward(observation).detach().numpy()
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
-        action_hat = self.get_action(observations)
+        observation = torch.from_numpy(observation).to(torch.float32)
+        observation = observation.to(ptu.device)
+        action_hat = self.forward(observation)
         actions = torch.from_numpy(actions).to(torch.float32)
         actions = actions.to(ptu.device)
         loss = self.loss_fn(action_hat, actions)
