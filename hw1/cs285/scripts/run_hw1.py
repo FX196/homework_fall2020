@@ -5,12 +5,13 @@ from cs285.infrastructure.rl_trainer import RL_Trainer
 from cs285.agents.bc_agent import BCAgent
 from cs285.policies.loaded_gaussian_policy import LoadedGaussianPolicy
 
+
 class BC_Trainer(object):
 
     def __init__(self, params):
 
         #######################
-        ## AGENT PARAMS
+        # AGENT PARAMS
         #######################
 
         agent_params = {
@@ -18,20 +19,20 @@ class BC_Trainer(object):
             'size': params['size'],
             'learning_rate': params['learning_rate'],
             'max_replay_buffer_size': params['max_replay_buffer_size'],
-            }
+        }
 
         self.params = params
-        self.params['agent_class'] = BCAgent ## HW1: you will modify this
+        self.params['agent_class'] = BCAgent  # HW1: you will modify this
         self.params['agent_params'] = agent_params
 
         ################
-        ## RL TRAINER
+        # RL TRAINER
         ################
 
-        self.rl_trainer = RL_Trainer(self.params) ## HW1: you will modify this
+        self.rl_trainer = RL_Trainer(self.params)  # HW1: you will modify this
 
         #######################
-        ## LOAD EXPERT POLICY
+        # LOAD EXPERT POLICY
         #######################
 
         print('Loading expert policy from...', self.params['expert_policy_file'])
@@ -54,7 +55,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--expert_policy_file', '-epf', type=str, required=True)  # relative to where you're running this script from
-    parser.add_argument('--expert_data', '-ed', type=str, required=True) #relative to where you're running this script from
+    parser.add_argument('--expert_data', '-ed', type=str, required=True)  # relative to where you're running this script from
     parser.add_argument('--env_name', '-env', type=str, help='choices: Ant-v2, Humanoid-v2, Walker-v2, HalfCheetah-v2, Hopper-v2', required=True)
     parser.add_argument('--exp_name', '-exp', type=str, default='pick an experiment name', required=True)
     parser.add_argument('--do_dagger', action='store_true')
@@ -86,19 +87,19 @@ def main():
     params = vars(args)
 
     ##################################
-    ### CREATE DIRECTORY FOR LOGGING
+    # CREATE DIRECTORY FOR LOGGING
     ##################################
 
     if args.do_dagger:
         # Use this prefix when submitting. The auto-grader uses this prefix.
         logdir_prefix = 'q2_'
-        assert args.n_iter>1, ('DAGGER needs more than 1 iteration (n_iter>1) of training, to iteratively query the expert and train (after 1st warmstarting from behavior cloning).')
+        assert args.n_iter > 1, ('DAGGER needs more than 1 iteration (n_iter>1) of training, to iteratively query the expert and train (after 1st warmstarting from behavior cloning).')
     else:
         # Use this prefix when submitting. The auto-grader uses this prefix.
         logdir_prefix = 'q1_'
-        assert args.n_iter==1, ('Vanilla behavior cloning collects expert data just once (n_iter=1)')
+        assert args.n_iter == 1, ('Vanilla behavior cloning collects expert data just once (n_iter=1)')
 
-    ## directory for logging
+    # directory for logging
     data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data')
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
@@ -108,13 +109,13 @@ def main():
     if not(os.path.exists(logdir)):
         os.makedirs(logdir)
 
-
     ###################
-    ### RUN TRAINING
+    # RUN TRAINING
     ###################
 
     trainer = BC_Trainer(params)
     trainer.run_training_loop()
+
 
 if __name__ == "__main__":
     main()

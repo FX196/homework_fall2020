@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import numpy as np
 import time
+import pickle
 
 import gym
 import torch
@@ -19,7 +20,7 @@ class RL_Trainer(object):
     def __init__(self, params):
 
         #############
-        ## INIT
+        # INIT
         #############
 
         # Get params, create logger, create TF session
@@ -36,7 +37,7 @@ class RL_Trainer(object):
         )
 
         #############
-        ## ENV
+        # ENV
         #############
 
         # Make the gym environment
@@ -64,15 +65,15 @@ class RL_Trainer(object):
             self.fps = self.env.env.metadata['video.frames_per_second']
 
         #############
-        ## AGENT
+        # AGENT
         #############
 
         agent_class = self.params['agent_class']
         self.agent = agent_class(self.env, self.params['agent_params'])
 
     def run_training_loop(self, n_iter, collect_policy, eval_policy,
-                        initial_expertdata=None, relabel_with_expert=False,
-                        start_relabel_with_expert=1, expert_policy=None):
+                          initial_expertdata=None, relabel_with_expert=False,
+                          start_relabel_with_expert=1, expert_policy=None):
         """
         :param n_iter:  number of (dagger) iterations
         :param collect_policy:
@@ -88,7 +89,7 @@ class RL_Trainer(object):
         self.start_time = time.time()
 
         for itr in range(n_iter):
-            print("\n\n********** Iteration %i ************"%itr)
+            print("\n\n********** Iteration %i ************" % itr)
 
             # decide if videos should be rendered/logged at this iteration
             if itr % self.params['video_log_freq'] == 0 and self.params['video_log_freq'] != -1:
@@ -113,7 +114,7 @@ class RL_Trainer(object):
             self.total_envsteps += envsteps_this_batch
 
             # relabel the collected obs with actions from a provided expert policy
-            if relabel_with_expert and itr>=start_relabel_with_expert:
+            if relabel_with_expert and itr >= start_relabel_with_expert:
                 paths = self.do_relabel_with_expert(expert_policy, paths)  # HW1: implement this function below
 
             # add collected data to replay buffer
@@ -157,27 +158,28 @@ class RL_Trainer(object):
 
         # TODO decide whether to load training data or use the current policy to collect more data
         # HINT: depending on if it's the first iteration or not, decide whether to either
-                # (1) load the data. In this case you can directly return as follows
-                # ``` return loaded_paths, 0, None ```
+        # (1) load the data. In this case you can directly return as follows
+        # ``` return loaded_paths, 0, None ```
+        if itr == 0:
+            return pickle.loads(load_initial_expertdata), 0, None
 
-                # (2) collect `self.params['batch_size']` transitions
+        # (2) collect `self.params['batch_size']` transitions
 
         # TODO collect `batch_size` samples to be used for training
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
         print("\nCollecting data to be used for training...")
-        paths, envsteps_this_batch = TODO
+        paths, envsteps_this_batch = utils.sample_trajectories(self.env, self.agent, self.params['batch_size'], self.params['ep_len'])
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
         train_video_paths = None
         if self.log_video:
             print('\nCollecting train rollouts to be used for saving videos...')
-            ## TODO look in utils and implement sample_n_trajectories
+            # TODO look in utils and implement sample_n_trajectories
             train_video_paths = utils.sample_n_trajectories(self.env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
 
         return paths, envsteps_this_batch, train_video_paths
-
 
     def train_agent(self):
         print('\nTraining agent using sampled data from replay buffer...')
@@ -187,12 +189,12 @@ class RL_Trainer(object):
             # TODO sample some data from the data buffer
             # HINT1: use the agent's sample function
             # HINT2: how much data = self.params['train_batch_size']
-            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = TODO
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self.agent.sample(self.params['train_batch_size'])
 
             # TODO use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
-            train_log = TODO
+            train_log = self.agent.update(ob_batch, ac_batch)
             all_logs.append(train_log)
         return all_logs
 
@@ -215,16 +217,16 @@ class RL_Trainer(object):
         eval_paths, eval_envsteps_this_batch = utils.sample_trajectories(self.env, eval_policy, self.params['eval_batch_size'], self.params['ep_len'])
 
         # save eval rollouts as videos in tensorboard event file
-        if self.log_video and train_video_paths != None:
+        if self.log_video and train_video_paths is not None:
             print('\nCollecting video rollouts eval')
             eval_video_paths = utils.sample_n_trajectories(self.env, eval_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
 
-            #save train/eval videos
+            # save train/eval videos
             print('\nSaving train rollouts as videos...')
             self.logger.log_paths_as_videos(train_video_paths, itr, fps=self.fps, max_videos_to_save=MAX_NVIDEO,
                                             video_title='train_rollouts')
-            self.logger.log_paths_as_videos(eval_video_paths, itr, fps=self.fps,max_videos_to_save=MAX_NVIDEO,
-                                             video_title='eval_rollouts')
+            self.logger.log_paths_as_videos(eval_video_paths, itr, fps=self.fps, max_videos_to_save=MAX_NVIDEO,
+                                            video_title='eval_rollouts')
 
         # save eval metrics
         if self.log_metrics:
@@ -254,7 +256,6 @@ class RL_Trainer(object):
             logs["TimeSinceStart"] = time.time() - self.start_time
             last_log = training_logs[-1]  # Only use the last log for now
             logs.update(last_log)
-
 
             if itr == 0:
                 self.initial_return = np.mean(train_returns)

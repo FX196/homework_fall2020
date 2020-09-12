@@ -50,6 +50,9 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             self.logstd = None
             self.optimizer = optim.Adam(self.logits_na.parameters(),
                                         self.learning_rate)
+            self.loss_fn = nn.CrossEntropyLoss()
+            self.model = self.logits_na
+
         else:
             self.logits_na = None
             self.mean_net = ptu.build_mlp(
@@ -66,6 +69,8 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
                 itertools.chain([self.logstd], self.mean_net.parameters()),
                 self.learning_rate
             )
+            self.loss_fn = nn.MSELoss()
+            self.model = self.mean_net
 
     ##################################
 
@@ -81,19 +86,27 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             observation = obs[None]
 
         # TODO return the action that the policy prescribes
-        raise NotImplementedError
+        observation = torch.from_numpy(observation)
+        observation = observation.to(ptu.device)
+        return self.forward(observation)
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
-        raise NotImplementedError
+        action_hat = self.get_action(observations)
+        loss = self.loss_fn(action_hat, actions)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        return loss
 
     # This function defines the forward pass of the network.
     # You can return anything you want, but you should be able to differentiate
     # through it. For example, you can return a torch.FloatTensor. You can also
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
+
     def forward(self, observation: torch.FloatTensor) -> Any:
-        raise NotImplementedError
+        return self.model.forward(observation)
 
 
 #####################################################
@@ -109,7 +122,7 @@ class MLPPolicySL(MLPPolicy):
             adv_n=None, acs_labels_na=None, qvals=None
     ):
         # TODO: update the policy and return the loss
-        loss = TODO
+        loss = super().update(observations, actions, adv_n=None, acs_labels_na=None, qvals=None)
         return {
             # You can add extra logging information here, but keep this line
             'Training Loss': ptu.to_numpy(loss),
