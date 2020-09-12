@@ -92,7 +92,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
-        observation = torch.from_numpy(observation).to(torch.float32)
+        observation = torch.from_numpy(observations).to(torch.float32)
         observation = observation.to(ptu.device)
         action_hat = self.forward(observation)
         actions = torch.from_numpy(actions).to(torch.float32)
