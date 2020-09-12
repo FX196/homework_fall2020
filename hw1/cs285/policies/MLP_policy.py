@@ -93,6 +93,8 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # update/train this policy
     def update(self, observations, actions, **kwargs):
         action_hat = self.get_action(observations)
+        actions = torch.from_numpy(actions)
+        actions = actions.to(ptu.device)
         loss = self.loss_fn(action_hat, actions)
         self.optimizer.zero_grad()
         loss.backward()
