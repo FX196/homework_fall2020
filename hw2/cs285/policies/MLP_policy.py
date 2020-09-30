@@ -147,9 +147,9 @@ class MLPPolicyPG(MLPPolicy):
         # by the `forward` method
         # HINT3: don't forget that `optimizer.step()` MINIMIZES a loss
 
-        loss = 0
-        for observation, action, advantage in zip(observations, actions, advantages):
-            loss -= self.forward(observation).log_prob(action) * advantage
+        loss = -(self.forward(observation).log_prob(action) * advantage).sum()
+        # for observation, action, advantage in zip(observations, actions, advantages):
+        #     loss -= (self.forward(observation).log_prob(action) * advantage).mean()
 
         # TODO: optimize `loss` using `self.optimizer`
         # HINT: remember to `zero_grad` first
