@@ -146,10 +146,13 @@ class MLPPolicyPG(MLPPolicy):
         # HINT2: you will want to use the `log_prob` method on the distribution returned
         # by the `forward` method
         # HINT3: don't forget that `optimizer.step()` MINIMIZES a loss
-
-        loss = -(self.forward(observations).log_prob(actions) * advantages).sum()
-        # for observation, action, advantage in zip(observations, actions, advantages):
-        #     loss -= (self.forward(observation).log_prob(action) * advantage).mean()
+        pred_actions = self.forward(observations)
+        log_pi = pred_actions.log_prob(actions)
+        if log_pi.ndim == 2:
+            loss = - torch.mul(torch.sum(log_pi, 1), advantages)
+        else:
+            loss = - torch.mul(log_pi, advantages)
+        loss = torch.mean(loss)
 
         # TODO: optimize `loss` using `self.optimizer`
         # HINT: remember to `zero_grad` first
@@ -164,7 +167,7 @@ class MLPPolicyPG(MLPPolicy):
             targets = ptu.from_numpy(targets)
 
             # TODO: use the `forward` method of `self.baseline` to get baseline predictions
-            baseline_predictions = self.run_baseline_prediction(observations)
+            baseline_predictions = self.baseline.forward(observations).squeeze()
 
             # avoid any subtle broadcasting bugs that can arise when dealing with arrays of shape
             # [ N ] versus shape [ N x 1 ]
