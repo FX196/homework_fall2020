@@ -176,7 +176,7 @@ class MLPPolicyPG(MLPPolicy):
 
             # TODO: compute the loss that should be optimized for training the baseline MLP (`self.baseline`)
             # HINT: use `F.mse_loss`
-            baseline_loss = F.mse_loss(baseline_predictions, targets)
+            baseline_loss = self.baseline_loss(baseline_predictions, targets)
 
             # TODO: optimize `baseline_loss` using `self.baseline_optimizer`
             # HINT: remember to `zero_grad` first
