@@ -164,7 +164,7 @@ class MLPPolicyPG(MLPPolicy):
             targets = ptu.from_numpy(targets)
 
             # TODO: use the `forward` method of `self.baseline` to get baseline predictions
-            baseline_predictions = self.baseline.forward(observations).squeeze()
+            baseline_predictions = self.run_baseline_prediction(observations)
 
             # avoid any subtle broadcasting bugs that can arise when dealing with arrays of shape
             # [ N ] versus shape [ N x 1 ]
