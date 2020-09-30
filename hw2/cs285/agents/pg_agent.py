@@ -131,8 +131,10 @@ class PGAgent(BaseAgent):
         # because each sum is from 0 to T (and doesnt involve t)
 
         discounted_return = 0
-        for t_prime, r_t_prime in enumerate(rewards):
-            discounted_return += (self.gamma ** t_prime) * r_t_prime
+        power = 1
+        for reward in rewards:
+            discounted_return += power * reward
+            power *= self.gamma
 
         return [discounted_return] * len(rewards)
 
@@ -149,11 +151,13 @@ class PGAgent(BaseAgent):
         # HINT2: it is possible to write a vectorized solution, but a solution
         # using a for loop is also fine
 
-        res = [rewards[-1]]
-        for reward in rewards[:-1]:
-            res.append(reward + self.gamma * res[-1])
+        list_of_discounted_cumsums = np.zeros(len(rewards))
+        cumsum_so_far = 0
+        for i, reward in enumerate(rewards):
+            cumsum_so_far += reward
+            list_of_discounted_cumsums[i] = cumsum_so_far
+            cumsum_so_far *= self.gamma
 
-        list_of_discounted_cumsums = np.array(res)
         list_of_discounted_cumsums = np.flip(list_of_discounted_cumsums)
 
         return list_of_discounted_cumsums
