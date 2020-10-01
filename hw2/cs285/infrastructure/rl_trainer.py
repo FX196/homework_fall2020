@@ -149,48 +149,37 @@ class RL_Trainer(object):
     ####################################
     ####################################
 
-    def collect_training_trajectories(
-            self,
-            itr,
-            initial_expertdata,
-            collect_policy,
-            batch_size,
-    ):
-        """
-        :param itr:
-        :param load_initial_expertdata:  path to expert data pkl file
-        :param collect_policy:  the current policy using which we collect data
-        :param batch_size:  the number of transitions we collect
-        :return:
-            paths: a list trajectories
-            envsteps_this_batch: the sum over the numbers of environment steps in paths
-            train_video_paths: paths which also contain videos for visualization purposes
-        """
-
+    def collect_training_trajectories(self, itr, load_initial_expertdata, collect_policy, batch_size):
+        # TODO: get this from hw1
         if itr == 0:
-            if initial_expertdata is not None:
-                paths = pickle.load(open(self.params['expert_data'], 'rb'))
-                return paths, 0, None
-            # if save_expert_data_to_disk:
-            #     num_transitions_to_sample = self.params['batch_size_initial']
+            if load_initial_expertdata:
+                with open(load_initial_expertdata, 'rb') as f:
+                    loaded_paths = pickle.load(f)
+                    return loaded_paths, 0, None
 
-        # collect data to be used for training
+                # if it's the first iteration and you aren't loading data, then
+                # `self.params['batch_size_initial']` is the number of transitions you want to collect
+            else:
+                batch_size = self.params['batch_size_initial']
+
+        # TODO collect `batch_size` samples to be used for training
+        # HINT1: use sample_trajectories from utils
+        # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
         print("\nCollecting data to be used for training...")
-        paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, self.params['batch_size_initial'], self.params['ep_len'])
+        paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, batch_size, self.params['ep_len'])
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
+        # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
         train_video_paths = None
         if self.logvideo:
             print('\nCollecting train rollouts to be used for saving videos...')
+            ## TODO look in utils and implement sample_n_trajectories
             train_video_paths = utils.sample_n_trajectories(self.env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
-
-        # if save_expert_data_to_disk and itr == 0:
-        #     with open('expert_data_{}.pkl'.format(self.params['env_name']), 'wb') as file:
-        #         pickle.dump(paths, file)
 
         return paths, envsteps_this_batch, train_video_paths
 
     def train_agent(self):
+        # TODO: get this from hw1
         print('\nTraining agent using sampled data from replay buffer...')
         all_logs = []
         for train_step in range(self.params['num_agent_train_steps_per_iter']):
