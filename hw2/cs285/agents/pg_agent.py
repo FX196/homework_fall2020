@@ -100,7 +100,7 @@ class PGAgent(BaseAgent):
             # TODO: standardize the advantages to have a mean of zero
             # and a standard deviation of one
             # HINT: there is a `normalize` function in `infrastructure.utils`
-            advantages = normalize(advantages)
+            advantages = normalize(advantages, np.mean(advantages), np.std(advantages))
 
         return advantages
 
@@ -152,12 +152,10 @@ class PGAgent(BaseAgent):
         # using a for loop is also fine
 
         list_of_discounted_cumsums = np.zeros(len(rewards))
-        cumsum_so_far = 0
-        for i, reward in enumerate(rewards):
-            cumsum_so_far += reward
-            list_of_discounted_cumsums[i] = cumsum_so_far
-            cumsum_so_far *= self.gamma
-
-        list_of_discounted_cumsums = np.flip(list_of_discounted_cumsums)
+        cumsum = 0
+        for i in range(len(rewards) - 1, -1, -1):
+            cumsum += rewards[i]
+            list_of_discounted_cumsums[i] = cumsum
+            cumsum *= self.gamma
 
         return list_of_discounted_cumsums
