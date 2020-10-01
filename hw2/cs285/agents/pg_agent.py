@@ -151,11 +151,11 @@ class PGAgent(BaseAgent):
         # HINT2: it is possible to write a vectorized solution, but a solution
         # using a for loop is also fine
 
-        list_of_discounted_cumsums = np.zeros(len(rewards))
-        cumsum = 0
-        for i in range(len(rewards) - 1, -1, -1):
-            cumsum += rewards[i]
-            list_of_discounted_cumsums[i] = cumsum
-            cumsum *= self.gamma
+        res = [rewards[-1]]
+        for reward in rewards[:-1]:
+            res.append(reward + self.gamma * res[-1])
+
+        list_of_discounted_cumsums = np.array(res)
+        list_of_discounted_cumsums = np.flip(list_of_discounted_cumsums)
 
         return list_of_discounted_cumsums
