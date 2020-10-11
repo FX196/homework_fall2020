@@ -201,11 +201,11 @@ class RL_Trainer(object):
         """
         # TODO: get this from Piazza
         if itr == 0:
-                if initial_expertdata is not None:
-                    paths = pickle.load(open(self.params['expert_data'], 'rb'))
-                    return paths, 0, None
-                if save_expert_data_to_disk:
-                    num_transitions_to_sample = self.params['batch_size_initial']
+            if initial_expertdata is not None:
+                paths = pickle.load(open(self.params['expert_data'], 'rb'))
+                return paths, 0, None
+            if save_expert_data_to_disk:
+                num_transitions_to_sample = self.params['batch_size_initial']
 
             # collect data to be used for training
             print("\nCollecting data to be used for training...")
@@ -220,6 +220,8 @@ class RL_Trainer(object):
             if save_expert_data_to_disk and itr == 0:
                 with open('expert_data_{}.pkl'.format(self.params['env_name']), 'wb') as file:
                     pickle.dump(paths, file)
+
+        return paths, envsteps_this_batch, train_video_paths
 
     def train_agent(self):
         # TODO: get this from Piazza
@@ -279,7 +281,7 @@ class RL_Trainer(object):
         eval_paths, eval_envsteps_this_batch = utils.sample_trajectories(self.env, eval_policy, self.params['eval_batch_size'], self.params['ep_len'])
 
         # save eval rollouts as videos in tensorboard event file
-        if self.logvideo and train_video_paths != None:
+        if self.logvideo and train_video_paths is not None:
             print('\nCollecting video rollouts eval')
             eval_video_paths = utils.sample_n_trajectories(self.env, eval_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
 
@@ -287,8 +289,8 @@ class RL_Trainer(object):
             print('\nSaving train rollouts as videos...')
             self.logger.log_paths_as_videos(train_video_paths, itr, fps=self.fps, max_videos_to_save=MAX_NVIDEO,
                                             video_title='train_rollouts')
-            self.logger.log_paths_as_videos(eval_video_paths, itr, fps=self.fps,max_videos_to_save=MAX_NVIDEO,
-                                             video_title='eval_rollouts')
+            self.logger.log_paths_as_videos(eval_video_paths, itr, fps=self.fps, max_videos_to_save=MAX_NVIDEO,
+                                            video_title='eval_rollouts')
 
         #######################
 
