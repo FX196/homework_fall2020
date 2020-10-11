@@ -19,7 +19,6 @@ class Flatten(torch.nn.Module):
         batch_size = x.shape[0]
         return x.view(batch_size, -1)
 
-
 OptimizerSpec = namedtuple(
     "OptimizerSpec",
     ["constructor", "optim_kwargs", "learning_rate_schedule"],
@@ -90,14 +89,11 @@ def create_lander_q_network(ob_dim, num_actions):
         nn.Linear(64, num_actions),
     )
 
-
 class Ipdb(nn.Module):
     def __init__(self):
         super().__init__()
-
     def forward(self, x):
-        import ipdb
-        ipdb.set_trace()
+        import ipdb; ipdb.set_trace()
         return x
 
 
@@ -121,7 +117,6 @@ def create_atari_q_network(ob_dim, num_actions):
         nn.ReLU(),
         nn.Linear(512, num_actions),
     )
-
 
 def atari_exploration_schedule(num_timesteps):
     return PiecewiseSchedule(
@@ -242,7 +237,7 @@ class PiecewiseSchedule(object):
         assert idxes == sorted(idxes)
         self._interpolation = interpolation
         self._outside_value = outside_value
-        self._endpoints = endpoints
+        self._endpoints      = endpoints
 
     def value(self, t):
         """See Schedule.value"""
@@ -254,7 +249,6 @@ class PiecewiseSchedule(object):
         # t does not belong to any of the pieces, so doom.
         assert self._outside_value is not None
         return self._outside_value
-
 
 class LinearSchedule(object):
     def __init__(self, schedule_timesteps, final_p, initial_p=1.0):
@@ -272,14 +266,13 @@ class LinearSchedule(object):
             final output value
         """
         self.schedule_timesteps = schedule_timesteps
-        self.final_p = final_p
-        self.initial_p = initial_p
+        self.final_p            = final_p
+        self.initial_p          = initial_p
 
     def value(self, t):
         """See Schedule.value"""
-        fraction = min(float(t) / self.schedule_timesteps, 1.0)
+        fraction  = min(float(t) / self.schedule_timesteps, 1.0)
         return self.initial_p + fraction * (self.final_p - self.initial_p)
-
 
 def compute_exponential_averages(variables, decay):
     """Given a list of tensorflow scalar variables
@@ -302,7 +295,6 @@ def compute_exponential_averages(variables, decay):
     apply_op = averager.apply(variables)
     return [averager.average(v) for v in variables], apply_op
 
-
 def minimize_and_clip(optimizer, objective, var_list, clip_val=10):
     """Minimized `objective` using `optimizer` w.r.t. variables in
     `var_list` while ensure the norm of the gradients for each
@@ -313,7 +305,6 @@ def minimize_and_clip(optimizer, objective, var_list, clip_val=10):
         if grad is not None:
             gradients[i] = (tf.clip_by_norm(grad, clip_val), var)
     return optimizer.apply_gradients(gradients)
-
 
 def initialize_interdependent_variables(session, vars_list, feed_dict):
     """Initialize a list of variables one at a time, which is useful if
@@ -335,7 +326,6 @@ def initialize_interdependent_variables(session, vars_list, feed_dict):
         else:
             vars_left = new_vars_left
 
-
 def get_wrapper_by_name(env, classname):
     currentenv = env
     while True:
@@ -344,8 +334,7 @@ def get_wrapper_by_name(env, classname):
         elif isinstance(env, gym.Wrapper):
             currentenv = currentenv.env
         else:
-            raise ValueError("Couldn't find wrapper named %s" % classname)
-
+            raise ValueError("Couldn't find wrapper named %s"%classname)
 
 class MemoryOptimizedReplayBuffer(object):
     def __init__(self, size, frame_history_len, lander=False):
@@ -379,26 +368,27 @@ class MemoryOptimizedReplayBuffer(object):
         self.size = size
         self.frame_history_len = frame_history_len
 
-        self.next_idx = 0
+        self.next_idx      = 0
         self.num_in_buffer = 0
 
-        self.obs = None
-        self.action = None
-        self.reward = None
-        self.done = None
+        self.obs      = None
+        self.action   = None
+        self.reward   = None
+        self.done     = None
 
     def can_sample(self, batch_size):
         """Returns true if `batch_size` different transitions can be sampled from the buffer."""
         return batch_size + 1 <= self.num_in_buffer
 
     def _encode_sample(self, idxes):
-        obs_batch = np.concatenate([self._encode_observation(idx)[None] for idx in idxes], 0)
-        act_batch = self.action[idxes]
-        rew_batch = self.reward[idxes]
+        obs_batch      = np.concatenate([self._encode_observation(idx)[None] for idx in idxes], 0)
+        act_batch      = self.action[idxes]
+        rew_batch      = self.reward[idxes]
         next_obs_batch = np.concatenate([self._encode_observation(idx + 1)[None] for idx in idxes], 0)
-        done_mask = np.array([1.0 if self.done[idx] else 0.0 for idx in idxes], dtype=np.float32)
+        done_mask      = np.array([1.0 if self.done[idx] else 0.0 for idx in idxes], dtype=np.float32)
 
         return obs_batch, act_batch, rew_batch, next_obs_batch, done_mask
+
 
     def sample(self, batch_size):
         """Sample `batch_size` different transitions.
@@ -451,7 +441,7 @@ class MemoryOptimizedReplayBuffer(object):
         return self._encode_observation((self.next_idx - 1) % self.size)
 
     def _encode_observation(self, idx):
-        end_idx = idx + 1  # make noninclusive
+        end_idx   = idx + 1 # make noninclusive
         start_idx = end_idx - self.frame_history_len
         # this checks if we are using low-dimensional observations, such as RAM
         # state, in which case we just directly return the latest RAM.
@@ -492,10 +482,10 @@ class MemoryOptimizedReplayBuffer(object):
             Index at which the frame is stored. To be used for `store_effect` later.
         """
         if self.obs is None:
-            self.obs = np.empty([self.size] + list(frame.shape), dtype=np.float32 if self.lander else np.uint8)
-            self.action = np.empty([self.size],                     dtype=np.int32)
-            self.reward = np.empty([self.size],                     dtype=np.float32)
-            self.done = np.empty([self.size],                     dtype=np.bool)
+            self.obs      = np.empty([self.size] + list(frame.shape), dtype=np.float32 if self.lander else np.uint8)
+            self.action   = np.empty([self.size],                     dtype=np.int32)
+            self.reward   = np.empty([self.size],                     dtype=np.float32)
+            self.done     = np.empty([self.size],                     dtype=np.bool)
         self.obs[self.next_idx] = frame
 
         ret = self.next_idx
@@ -523,4 +513,5 @@ class MemoryOptimizedReplayBuffer(object):
         """
         self.action[idx] = action
         self.reward[idx] = reward
-        self.done[idx] = done
+        self.done[idx]   = done
+
