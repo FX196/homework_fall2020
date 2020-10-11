@@ -153,7 +153,8 @@ class RL_Trainer(object):
             else:
                 use_batchsize = self.params['batch_size']
                 if itr == 0:
-                    use_batchsize = self.params['batch_size_initial']
+                    if 'batch_size_initial' in self.params:
+                        use_batchsize = self.params['batch_size_initial']
                 paths, envsteps_this_batch, train_video_paths = (
                     self.collect_training_trajectories(
                         itr, initial_expertdata, collect_policy, use_batchsize)
