@@ -78,8 +78,8 @@ class FFModel(nn.Module, BaseModel):
                 unnormalized) output of the delta network. This is needed
         """
         # normalize input data to mean 0, std 1
-        obs_normalized = normalize(obs_unnormalized, obs_mean, obs_std)  # TODO(Q1)
-        acs_normalized = normalize(acs_unnormalized, acs_mean, acs_std)  # TODO(Q1)
+        obs_normalized = ptu.from_numpy(normalize(obs_unnormalized, obs_mean, obs_std))  # TODO(Q1)
+        acs_normalized = ptu.from_numpy(normalize(acs_unnormalized, acs_mean, acs_std))  # TODO(Q1)
 
         # predicted change in obs
         concatenated_input = torch.cat([obs_normalized, acs_normalized], dim=1)
