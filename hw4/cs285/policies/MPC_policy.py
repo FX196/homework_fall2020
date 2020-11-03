@@ -93,5 +93,5 @@ class MPCPolicy(BasePolicy):
         for i in range(self.horizon):
             actions = candidate_action_sequences[:, i, :]
             predicted_obs = model.get_prediction(predicted_obs, actions, self.data_statistics)
-            sum_of_rewards += self.env.get_rewards(predicted_obs)
+            sum_of_rewards += self.env.get_reward(predicted_obs)
         return sum_of_rewards
