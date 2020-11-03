@@ -89,9 +89,11 @@ class MPCPolicy(BasePolicy):
         # Hint: Remember that the model can process observations and actions
         #       in batch, which can be much faster than looping through each
         #       action sequence.
-        predicted_obs = np.repeat(np.expand_dims(obs, axis=0), self.N, axis=0)
+        obs = np.repeat(np.expand_dims(obs, axis=0), self.N, axis=0)
         for i in range(self.horizon):
             actions = candidate_action_sequences[:, i, :]
-            predicted_obs = model.get_prediction(predicted_obs, actions, self.data_statistics)
-            sum_of_rewards += self.env.get_reward(predicted_obs)
+            rewards, _ = self.env.get_reward(obs, actions)
+            sum_of_rewards += rewards
+            obs = model.get_prediction(obs, actions, self.data_statistics)
+
         return sum_of_rewards
