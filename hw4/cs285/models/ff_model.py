@@ -88,7 +88,7 @@ class FFModel(nn.Module, BaseModel):
         # Hint: as described in the PDF, the output of the network is the
         # *normalized change* in state, i.e. normalized(s_t+1 - s_t).
         delta_pred_normalized = self.delta_network(concatenated_input)  # TODO(Q1)
-        next_obs_pred = obs_unnormalized + unnormalize(delta_pred_normalized, obs_mean, obs_std)  # TODO(Q1)
+        next_obs_pred = obs_unnormalized + unnormalize(ptu.to_numpy(delta_pred_normalized), delta_mean, delta_std)  # TODO(Q1)
         return next_obs_pred, delta_pred_normalized
 
     def get_prediction(self, obs, acs, data_statistics):
@@ -105,7 +105,7 @@ class FFModel(nn.Module, BaseModel):
              - 'delta_std'
         :return: a numpy array of the predicted next-states (s_t+1)
         """
-        prediction = self(obs, acs, **data_statistics)[0]  # TODO(Q1) get numpy array of the predicted next-states (s_t+1)
+        prediction = ptu.to_numpy(self(obs, acs, **data_statistics)[0])  # TODO(Q1) get numpy array of the predicted next-states (s_t+1)
         # Hint: `self(...)` returns a tuple, but you only need to use one of the
         # outputs.
         return prediction
