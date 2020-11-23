@@ -95,7 +95,7 @@ def main():
         params['ep_len']=100
     if params['env_name']=='PointmassVeryHard-v0':
         params['ep_len']=200
-    
+
     if params['use_rnd']:
         params['explore_weight_schedule'] = PiecewiseSchedule([(0,1), (params['num_exploration_steps'], 0)], outside_value=0.0)
     else:
@@ -104,13 +104,13 @@ def main():
     if params['unsupervised_exploration']:
         params['explore_weight_schedule'] = ConstantSchedule(1.0)
         params['exploit_weight_schedule'] = ConstantSchedule(0.0)
-        
+
         if not params['use_rnd']:
             params['learning_starts'] = params['num_exploration_steps']
-    
+
 
     logdir_prefix = 'hw5_expl_'  # keep for autograder
-    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data')
+    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../../data/hw5')
 
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
