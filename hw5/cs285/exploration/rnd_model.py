@@ -49,7 +49,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
     def forward(self, ob_no):
         # TODO: Get the prediction error for ob_no
         # HINT: Remember to detach the output of self.f!
-        error = (self.f(ob_no).detach() - self.f_hat(ob_no)) ** 2
+        error = ((self.f(ob_no).detach() - self.f_hat(ob_no)) ** 2).mean()
         return error
 
     def forward_np(self, ob_no):
