@@ -49,6 +49,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
     def forward(self, ob_no):
         # TODO: Get the prediction error for ob_no
         # HINT: Remember to detach the output of self.f!
+        ob_no = ptu.from_numpy(ob_no)
         error = ((self.f(ob_no).detach() - self.f_hat(ob_no)) ** 2).mean(axis=1)
         return error
 
@@ -60,7 +61,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
     def update(self, ob_no):
         # TODO: Update f_hat using ob_no
         # Hint: Take the mean prediction error across the batch
-        loss = nn.MSELoss(self.f(ob_no).detach(), self.f_hat(ob_no))
+        loss = nn.MSELoss(ptu.from_numpy(self.f(ob_no).detach()), self.f_hat(ob_no))
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
