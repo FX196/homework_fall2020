@@ -61,6 +61,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
     def update(self, ob_no):
         # TODO: Update f_hat using ob_no
         # Hint: Take the mean prediction error across the batch
+        ob_no = ptu.from_numpy(ob_no)
         loss = nn.MSELoss(ptu.from_numpy(self.f(ob_no).detach()), self.f_hat(ob_no))
         self.optimizer.zero_grad()
         loss.backward()
