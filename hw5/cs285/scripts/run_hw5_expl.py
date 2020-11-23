@@ -110,7 +110,7 @@ def main():
 
 
     logdir_prefix = 'hw5_expl_'  # keep for autograder
-    data_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../../data/hw5'))
+    data_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../data/hw5'))
 
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
