@@ -17,6 +17,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
     def __init__(self, hparams, optimizer_spec, **kwargs):
         super().__init__(**kwargs)
         self.ob_dim = hparams['ob_dim']
+        print(f"OB_DIM: {self.ob_dim}")
         self.output_size = hparams['rnd_output_size']
         self.n_layers = hparams['rnd_n_layers']
         self.size = hparams['rnd_size']
