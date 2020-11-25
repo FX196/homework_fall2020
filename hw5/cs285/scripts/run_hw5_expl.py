@@ -70,6 +70,7 @@ def main():
     parser.add_argument('--which_gpu', '-gpu_id', default=0)
     parser.add_argument('--scalar_log_freq', type=int, default=int(1e3))
     parser.add_argument('--save_params', action='store_true')
+    parser.add_argument('--hash', action='store_true')
 
     args = parser.parse_args()
 
