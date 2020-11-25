@@ -58,6 +58,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
 
     def forward(self, ob_no):
         if self.hash:
+            print(ob_no)
             codes = ptu.to_numpy(self.encoder(ob_no).round())
             counts = np.zeros(len(codes))
             for i, code in enumerate(codes):
