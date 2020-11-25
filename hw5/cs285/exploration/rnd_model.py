@@ -38,6 +38,18 @@ class RNDModel(nn.Module, BaseExplorationModel):
             self.decoder = ptu.build_mlp(self.ob_dim // 2, self.ob_dim, self.n_layers, self.size)
             self.ae_loss = nn.MSELoss()
 
+            self.f = ptu.build_mlp(self.ob_dim, self.output_size, self.n_layers, self.size, init_method=init_method_1)
+            self.f_hat = ptu.build_mlp(self.ob_dim, self.output_size, self.n_layers, self.size, init_method=init_method_2)
+
+            self.optimizer = self.optimizer_spec.constructor(
+                list(self.encoder.parameters()) + list(self.decoder.parameters()),
+                **self.optimizer_spec.optim_kwargs
+            )
+            self.learning_rate_scheduler = optim.lr_scheduler.LambdaLR(
+                self.optimizer,
+                self.optimizer_spec.learning_rate_schedule,
+            )
+
             self.counts = defaultdict(int)
 
         else:
