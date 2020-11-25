@@ -52,6 +52,8 @@ class RNDModel(nn.Module, BaseExplorationModel):
 
             self.counts = defaultdict(int)
 
+            self.pretrain_autoencoder()
+
         else:
             self.f = ptu.build_mlp(self.ob_dim, self.output_size, self.n_layers, self.size, init_method=init_method_1)
             self.f_hat = ptu.build_mlp(self.ob_dim, self.output_size, self.n_layers, self.size, init_method=init_method_2)
@@ -67,6 +69,15 @@ class RNDModel(nn.Module, BaseExplorationModel):
 
             self.f.to(ptu.device)
             self.f_hat.to(ptu.device)
+
+    def pretrain_autoencoder(self):
+        samples = np.random.uniform(0, 1, size=(10000, 2))
+        ob_no = ptu.from_numpy(samples)
+        reconstruction = self.decoder(self.encoder(ob_no))
+        loss = self.ae_loss(ob_no, reconstruction)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
     def forward(self, ob_no):
         if self.hash:
