@@ -36,6 +36,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
         if self.hash:
             self.encoder = ptu.build_mlp(self.ob_dim, self.ob_dim // 2, self.n_layers, self.size)
             self.decoder = ptu.build_mlp(self.ob_dim // 2, self.ob_dim, self.n_layers, self.size)
+            self.ae_loss = nn.MSELoss()
 
             self.counts = defaultdict(int)
 
@@ -80,7 +81,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
         if self.hash:
             ob_no = ptu.from_numpy(ob_no)
             reconstruction = self.decoder(self.encoder(ob_no))
-            loss = nn.MSELoss(ob_no, reconstruction)
+            loss = self.ae_loss(ob_no, reconstruction)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
