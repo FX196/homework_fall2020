@@ -87,7 +87,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
             for i, code in enumerate(codes):
                 counts[i] = self.counts[code[0]]
                 self.counts[code[0]] += 1
-            return 1 / np.sqrt(counts)
+            return 1 / np.sqrt(counts+1)
         # TODO: Get the prediction error for ob_no
         # HINT: Remember to detach the output of self.f!
         else:
