@@ -58,11 +58,11 @@ class RNDModel(nn.Module, BaseExplorationModel):
 
     def forward(self, ob_no):
         if self.hash:
-            codes = ptu.to_numpy((self.encoder(ob_no).round())
+            codes = ptu.to_numpy(self.encoder(ob_no).round())
             counts = np.zeros(len(codes))
             for i, code in enumerate(codes):
-                counts[i] = self.counts[code]
-                self.counts[code] += 1
+                counts[i] = self.counts[code[0]]
+                self.counts[code[0]] += 1
             return 1 / np.sqrt(counts)
         # TODO: Get the prediction error for ob_no
         # HINT: Remember to detach the output of self.f!
