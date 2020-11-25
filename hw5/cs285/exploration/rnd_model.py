@@ -34,8 +34,8 @@ class RNDModel(nn.Module, BaseExplorationModel):
         # HINT 1) Check out the method ptu.build_mlp
         # HINT 2) There are two weight init methods defined above
         if self.hash:
-            self.encoder = ptu.build_mlp(self.ob_dim, self.ob_dim // 2, self.n_layers, self.size)
-            self.decoder = ptu.build_mlp(self.ob_dim // 2, self.ob_dim, self.n_layers, self.size)
+            self.encoder = ptu.build_mlp(self.ob_dim, self.output_size, self.n_layers, self.size)
+            self.decoder = ptu.build_mlp(self.output_size, self.ob_dim, self.n_layers, self.size)
             self.ae_loss = nn.MSELoss()
 
             self.f = ptu.build_mlp(self.ob_dim, self.output_size, self.n_layers, self.size, init_method=init_method_1)
@@ -85,8 +85,8 @@ class RNDModel(nn.Module, BaseExplorationModel):
             codes = ptu.to_numpy(self.encoder(ob_no).round())
             counts = np.zeros(len(codes))
             for i, code in enumerate(codes):
-                counts[i] = self.counts[code[0]]
-                self.counts[code[0]] += 1
+                counts[i] = self.counts[str(code)]
+                self.counts[str(code)] += 1
             return 1 / np.sqrt(counts+1)
         # TODO: Get the prediction error for ob_no
         # HINT: Remember to detach the output of self.f!
